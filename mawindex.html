@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>make/agents/work — a podcast about agents in real businesses</title>
+  <meta name="description" content="Two non-developers in London and Zurich talking to operators inside real businesses about agents they've actually built. Then we try the workflows ourselves and report back.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #ede4d0;
+      --cream-soft: #e6dcc4;
+      --charcoal: #1a1a1a;
+      --grey: #6b6258;
+      --grey-soft: #8a8174;
+      --dashed: rgba(26, 26, 26, 0.18);
+      --cobalt: #1d4ed8;
+      --cobalt-dim: rgba(29, 78, 216, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: var(--cream);
+      color: var(--charcoal);
+      line-height: 1.5;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+
+    /* Top wordmark + nav */
+    .top {
+      padding-bottom: 32px;
+      border-bottom: 1px dashed var(--dashed);
+      margin-bottom: 56px;
+    }
+
+    .wordmark {
+      font-size: 22px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+      color: var(--charcoal);
+    }
+
+    .wordmark .slash {
+      color: var(--cobalt);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 0;
+      font-size: 14px;
+      color: var(--grey);
+    }
+
+    .nav a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav a:hover { color: var(--cobalt); }
+
+    .nav .sep {
+      margin: 0 12px;
+      color: var(--grey-soft);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 16px 0 64px;
+      border-bottom: 1px dashed var(--dashed);
+      margin-bottom: 64px;
+    }
+
+    .hero .label {
+      font-size: 13px;
+      color: var(--charcoal);
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      font-size: 44px;
+      line-height: 1.15;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+      max-width: 760px;
+    }
+
+    .hero h1 .accent { color: var(--cobalt); }
+
+    .hero .lede {
+      font-size: 16px;
+      color: var(--grey);
+      max-width: 620px;
+      margin-bottom: 32px;
+    }
+
+    .hero .cta-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: var(--cobalt);
+      color: var(--cream);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: opacity 0.15s;
+    }
+
+    .cta-btn:hover { opacity: 0.88; }
+
+    .cta-btn.outline {
+      background: transparent;
+      color: var(--charcoal);
+      border: 1px dashed var(--dashed);
+    }
+
+    .cta-btn.outline:hover {
+      background: var(--cobalt-dim);
+      border-color: var(--cobalt);
+      color: var(--cobalt);
+    }
+
+    /* Sections */
+    section {
+      padding: 0 0 64px;
+      margin-bottom: 64px;
+      border-bottom: 1px dashed var(--dashed);
+    }
+
+    section:last-of-type { border-bottom: none; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .section-num {
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--cobalt);
+      letter-spacing: -0.01em;
+    }
+
+    .section-name {
+      font-size: 14px;
+      color: var(--grey);
+    }
+
+    .section-body {
+      max-width: 680px;
+    }
+
+    .section-body p {
+      margin-bottom: 16px;
+      color: var(--charcoal);
+    }
+
+    .section-body p.muted {
+      color: var(--grey);
+    }
+
+    /* Format breakdown */
+    .format-list {
+      list-style: none;
+      margin-top: 24px;
+    }
+
+    .format-list li {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 24px;
+      padding: 20px 0;
+      border-top: 1px dashed var(--dashed);
+      font-size: 15px;
+    }
+
+    .format-list li:last-child { border-bottom: 1px dashed var(--dashed); }
+
+    .format-list .step-num {
+      color: var(--cobalt);
+      font-weight: 500;
+    }
+
+    .format-list .step-content strong {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .format-list .step-content span {
+      color: var(--grey);
+      font-size: 14px;
+    }
+
+    /* Audience tags */
+    .audience-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .audience-tags .tag {
+      font-size: 13px;
+      padding: 6px 14px;
+      border: 1px dashed var(--dashed);
+      color: var(--grey);
+    }
+
+    /* Listen list */
+    .listen-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .listen-list a {
+      display: block;
+      padding: 16px 20px;
+      border: 1px dashed var(--dashed);
+      color: var(--charcoal);
+      text-decoration: none;
+      font-size: 14px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .listen-list a:hover {
+      border-color: var(--cobalt);
+      background: var(--cobalt-dim);
+    }
+
+    .listen-list a .platform {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .listen-list a .status {
+      font-size: 12px;
+      color: var(--grey);
+    }
+
+    /* Newsletter form */
+    .signup {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      max-width: 480px;
+      flex-wrap: wrap;
+    }
+
+    .signup input[type="email"] {
+      flex: 1;
+      min-width: 240px;
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      background: transparent;
+      border: 1px dashed var(--dashed);
+      color: var(--charcoal);
+    }
+
+    .signup input[type="email"]:focus {
+      outline: none;
+      border-color: var(--cobalt);
+      border-style: solid;
+    }
+
+    .signup button {
+      padding: 12px 20px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--cobalt);
+      color: var(--cream);
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .signup button:hover { opacity: 0.88; }
+
+    .signup-note {
+      font-size: 12px;
+      color: var(--grey);
+      margin-top: 12px;
+    }
+
+    /* Footer */
+    footer {
+      padding-top: 48px;
+      border-top: 1px dashed var(--dashed);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      font-size: 13px;
+      color: var(--grey);
+    }
+
+    footer .footer-block strong {
+      display: block;
+      color: var(--charcoal);
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    footer a {
+      color: var(--grey);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--cobalt); }
+
+    footer .siblings a {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    footer .siblings a::before {
+      content: "// ";
+      color: var(--cobalt);
+    }
+
+    footer .meta {
+      grid-column: 1 / -1;
+      padding-top: 32px;
+      margin-top: 16px;
+      border-top: 1px dashed var(--dashed);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .container { padding: 32px 20px 64px; }
+      .hero h1 { font-size: 32px; }
+      .section-num { font-size: 24px; }
+      .section-head { gap: 12px; }
+      footer { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Top wordmark + nav -->
+    <header class="top">
+      <div class="wordmark">make<span class="slash">/</span>agents<span class="slash">/</span>work</div>
+      <nav class="nav">
+        <a href="#the-show">the show</a><span class="sep">·</span>
+        <a href="#the-format">the format</a><span class="sep">·</span>
+        <a href="#who-its-for">who it's for</a><span class="sep">·</span>
+        <a href="#listen">listen</a><span class="sep">·</span>
+        <a href="#newsletter">stay in the loop</a>
+      </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="label">[ a podcast / launching 2026 ]</div>
+      <h1>A show about <span class="accent">agents that do useful work.</span></h1>
+      <p class="lede">We talk to the people who built them, then come back the next week with what we'd take from it.</p>
+      <div class="cta-row">
+        <a href="#newsletter" class="cta-btn">subscribe →</a>
+        <a href="#the-show" class="cta-btn outline">what the show is</a>
+      </div>
+    </section>
+
+    <!-- 01 the show -->
+    <section id="the-show">
+      <div class="section-head">
+        <div class="section-num">/ 01</div>
+        <div class="section-name">the show</div>
+      </div>
+      <div class="section-body">
+        <p>We sit down with someone who's built an agent doing useful work in their business. We look at how they did it, then come back the following week to talk about what the rest of us could do with the same idea.</p>
+        <p>Neither of us is a trained developer, which is rather the point. We're interested in what people who can't really write code are still managing to build.</p>
+      </div>
+    </section>
+
+    <!-- 02 the format -->
+    <section id="the-format">
+      <div class="section-head">
+        <div class="section-num">/ 02</div>
+        <div class="section-name">the format</div>
+      </div>
+      <div class="section-body">
+        <p>Each interview gets a follow-up the next week, plus a short write-up.</p>
+        <ul class="format-list">
+          <li>
+            <div class="step-num">/ 01</div>
+            <div class="step-content">
+              <strong>the interview</strong>
+              <span>An interview with the person who built the agent. We get into how they made it, what's in their stack, what they tried that didn't work, what it actually does day to day, and what they'd do differently today.</span>
+            </div>
+          </li>
+          <li>
+            <div class="step-num">/ 02</div>
+            <div class="step-content">
+              <strong>the follow-up</strong>
+              <span>A week later we come back to talk about what we'd take from it, and how we'd try to apply it ourselves.</span>
+            </div>
+          </li>
+          <li>
+            <div class="step-num">/ 03</div>
+            <div class="step-content">
+              <strong>the write-up</strong>
+              <span>A short note on Substack pulling out the practical takeaways.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 03 who it's for -->
+    <section id="who-its-for">
+      <div class="section-head">
+        <div class="section-num">/ 03</div>
+        <div class="section-name">who it's for</div>
+      </div>
+      <div class="section-body">
+        <p>For leaders and operators putting AI to work in their organisations. People who are short on time, or hit a wall the moment things get super technical, and want more than another slick demo that falls apart on contact with real work.</p>
+        <div class="audience-tags">
+          <span class="tag">[ founders and CEOs ]</span>
+          <span class="tag">[ COOs and ops leaders ]</span>
+          <span class="tag">[ heads of product, finance, marketing ]</span>
+          <span class="tag">[ regulated industries ]</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 listen -->
+    <section id="listen">
+      <div class="section-head">
+        <div class="section-num">/ 04</div>
+        <div class="section-name">listen</div>
+      </div>
+      <div class="section-body">
+        <p class="muted">Coming soon. Subscribe to the newsletter and we'll send you a note when the first episode drops.</p>
+        <div class="listen-list">
+          <a href="#newsletter">
+            <span class="platform">youtube</span>
+            <span class="status">[ coming soon ]</span>
+          </a>
+          <a href="#newsletter">
+            <span class="platform">spotify</span>
+            <span class="status">[ coming soon ]</span>
+          </a>
+          <a href="#newsletter">
+            <span class="platform">apple podcasts</span>
+            <span class="status">[ coming soon ]</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 newsletter -->
+    <section id="newsletter">
+      <div class="section-head">
+        <div class="section-num">/ 05</div>
+        <div class="section-name">stay in the loop</div>
+      </div>
+      <div class="section-body">
+        <p>One email when the first episode is out. After that, a short note per episode with a link to listen.</p>
+        <form class="signup" onsubmit="event.preventDefault(); alert('Thanks - we\'ll be in touch.');">
+          <input type="email" placeholder="your@email.com" required>
+          <button type="submit">subscribe</button>
+        </form>
+        <p class="signup-note">[ unsubscribe any time, we don't pass your email to anyone ]</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-block">
+        <strong>// in the family</strong>
+        <div class="siblings">
+          <a href="https://bamyazi.com">bamyazi · ai advisory + build</a>
+          <a href="https://ollieonwork.com">ollie on work · newsletter</a>
+        </div>
+      </div>
+      <div class="footer-block">
+        <strong>// the hosts</strong>
+        <div>
+          Ollie Henderson · london<br>
+          Stephen Benjamin · zurich
+        </div>
+      </div>
+      <div class="footer-block">
+        <strong>// get in touch</strong>
+        <div>
+          <a href="mailto:hello@makeagentswork.com">hello@makeagentswork.com</a>
+        </div>
+      </div>
+      <div class="meta">
+        <span>// make/agents/work</span>
+        <span>london + zurich / 2026</span>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>
